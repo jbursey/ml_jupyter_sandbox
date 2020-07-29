@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+    spark-master:
+        container_name: spark_master
+        build: 
+            context: .
+            dockerfile: ./Dockerfile-Master
+        ports:
+            - 8080:8080
+        #command: ./opt/spark/sbin/start-master.sh
+    spark-worker1:
+        container_name: spark_worker1
+        build:
+            context: .
+            dockerfile: ./Dockerfile-Master
+        depends_on: 
+            - spark-master
+    spark-notebook:
+        image: jupyter/datascience-notebook:9b06df75e445
+        ports:
+            - 8980:8888
+        environment:
+            - JUPYTER_ENABLE_LAB=yes
+        volumes: 
+            - $PWD:/home/jovyan/work
