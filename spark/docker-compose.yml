@@ -5,22 +5,68 @@ services:
         container_name: spark_master
         build: 
             context: .
-            dockerfile: ./Dockerfile-Master
+            dockerfile: ./Dockerfile-Spark
         ports:
             - 8080:8080
-        #command: ./opt/spark/sbin/start-master.sh
+        hostname: "spark-plug" #give it a hostnmae so worker can run connect script
+        networks: 
+            static-net:
+                ipv4_address: 172.25.0.9
+        #volumes: 
+            #- $PWD/start-scripts:/opt/spark/start-scripts
+        entrypoint: ["./start-and-wait-master.sh"]
     spark-worker1:
         container_name: spark_worker1
         build:
             context: .
-            dockerfile: ./Dockerfile-Master
+            dockerfile: ./Dockerfile-Spark
+        ports:
+            - 8081:8081
+        #volumes: 
+            #- $PWD/start-scripts:/opt/spark/start-scripts
         depends_on: 
             - spark-master
+        entrypoint: ["./start-and-wait-worker.sh"]
+        networks: 
+            static-net:
+                ipv4_address: 172.25.0.10
+    spark-worker2:
+        container_name: spark_worker2
+        build:
+            context: .
+            dockerfile: ./Dockerfile-Spark
+        #volumes: 
+            #- $PWD/start-scripts:/opt/spark/start-scripts
+        depends_on: 
+            - spark-master
+        entrypoint: ["./start-and-wait-worker.sh"]
+        networks: 
+            static-net:
+                ipv4_address: 172.25.0.11
     spark-notebook:
-        image: jupyter/datascience-notebook:9b06df75e445
-        ports:
-            - 8980:8888
+        #image: jupyter/pyspark-notebook:54462805efcb ## poor mans way to change spark version below
+        # 7254cdcfa22b <-- hash close to version 2yrs ago
+        #https://github.com/jupyter/docker-stacks/tree/7c45ec67c8e7
+        build:
+            context: .
+            dockerfile: ./Dockerfile-JupyterLabPySpark2.4.6
+        ports:            
+            - 9876:9876
         environment:
             - JUPYTER_ENABLE_LAB=yes
+            - APACHE_SPARK_VERSION=2.4.6
+            - HADOOP_VERSION=2.7
+            - GRANT_SUDO=yes
         volumes: 
-            - $PWD:/home/jovyan/work
+            - $PWD/notebooks:/usr/local/notebooks
+        networks: 
+            static-net:
+                ipv4_address: 172.25.0.100
+        #command: ["start-notebook.sh", "--user", "root"]
+
+networks:
+    static-net:
+        driver: bridge
+        ipam:
+            config:
+                - subnet: 172.25.0.0/24

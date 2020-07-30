@@ -7,7 +7,7 @@ RUN sudo apt install vim -y
 RUN sudo apt install wget -y
 RUN sudo apt install python3 -y
 RUN sudo apt install python-pip -y
-RUN pip install pyspark
+RUN pip install pyspark==2.4.6
 RUN wget https://downloads.apache.org/spark/spark-2.4.6/spark-2.4.6-bin-hadoop2.7.tgz
 RUN tar xvf spark-*
 RUN mv spark-2.4.6-bin-hadoop2.7 /opt/spark
@@ -15,6 +15,11 @@ RUN echo "export SPARK_HOME=/opt/spark" >> ~/.profile
 RUN echo "export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin" >> ~/.profile
 RUN echo "export PYSPARK_PYTHON=/usr/bin/python3" >> ~/.profile
 RUN echo 'source ~/.profile'
-RUN /opt/spark/sbin/start-master.sh
+
+RUN cd /opt/spark && mkdir start-scripts
+COPY ./start-scripts/ /opt/spark/start-scripts/
+WORKDIR /opt/spark/start-scripts
+
+EXPOSE 7077
 
 ENTRYPOINT ["tail", "-f", "/dev/null"]
