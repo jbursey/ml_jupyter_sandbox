@@ -11,15 +11,23 @@ RUN pip install pyspark==2.4.6
 RUN wget https://downloads.apache.org/spark/spark-2.4.6/spark-2.4.6-bin-hadoop2.7.tgz
 RUN tar xvf spark-*
 RUN mv spark-2.4.6-bin-hadoop2.7 /opt/spark
-RUN echo "export SPARK_HOME=/opt/spark" >> ~/.profile
-RUN echo "export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin" >> ~/.profile
-RUN echo "export PYSPARK_PYTHON=/usr/bin/python3" >> ~/.profile
-RUN echo 'source ~/.profile'
+RUN sudo apt-get update
+RUN sudo apt install openjdk-8-jdk -y
+RUN sudo update-java-alternatives --set java-1.8.0-openjdk-amd64
+
+ENV SPARK_HOME=/opt/spark 
+ENV PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
+ENV PYSPARK_PYTHON=/usr/bin/python3
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
 RUN cd /opt/spark && mkdir start-scripts
 COPY ./start-scripts/ /opt/spark/start-scripts/
 WORKDIR /opt/spark/start-scripts
 
 EXPOSE 7077
+EXPOSE 8080
+EXPOSE 8081
+EXPOSE 8082
+EXPOSE 8083
 
 ENTRYPOINT ["tail", "-f", "/dev/null"]

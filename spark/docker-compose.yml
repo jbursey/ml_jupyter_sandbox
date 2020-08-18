@@ -8,12 +8,13 @@ services:
             dockerfile: ./Dockerfile-Spark
         ports:
             - 8080:8080
-        hostname: "spark-plug" #give it a hostnmae so worker can run connect script
+            - 4040:4040
+        hostname: "172.25.0.9" #give it a hostnmae so worker can run connect script
         networks: 
             static-net:
                 ipv4_address: 172.25.0.9
-        #volumes: 
-            #- $PWD/start-scripts:/opt/spark/start-scripts
+        volumes: 
+            - $PWD/sample_data:/opt/spark/sample_data            
         entrypoint: ["./start-and-wait-master.sh"]
     spark-worker1:
         container_name: spark_worker1
@@ -30,6 +31,8 @@ services:
         networks: 
             static-net:
                 ipv4_address: 172.25.0.10
+        volumes: 
+            - $PWD/sample_data:/opt/spark/sample_data            
     spark-worker2:
         container_name: spark_worker2
         build:
@@ -43,6 +46,8 @@ services:
         networks: 
             static-net:
                 ipv4_address: 172.25.0.11
+        volumes: 
+            - $PWD/sample_data:/opt/spark/sample_data            
     spark-notebook:
         #image: jupyter/pyspark-notebook:54462805efcb ## poor mans way to change spark version below
         # 7254cdcfa22b <-- hash close to version 2yrs ago
@@ -57,8 +62,12 @@ services:
             - APACHE_SPARK_VERSION=2.4.6
             - HADOOP_VERSION=2.7
             - GRANT_SUDO=yes
+            - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+            - AWS_REGION=$AWS_REGION
+            - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
         volumes: 
             - $PWD/notebooks:/usr/local/notebooks
+            - $PWD/sample_data:/opt/spark/sample_data            
         networks: 
             static-net:
                 ipv4_address: 172.25.0.100

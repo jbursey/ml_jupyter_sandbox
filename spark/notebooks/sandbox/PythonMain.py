@@ -12,9 +12,9 @@ if args.testfile:
     fileNameAndPath = args.testfile
     
 gsl = GpsSparkLogic()
-gsl.init_spark("") #should default to whatever is in env on spark cluster....I think
+gsl.init_spark() #should default to whatever is in env on spark cluster....I think
 #gsl.read_data()
 #gsl.show_df_stats()
-gsl.save_test_s3_file("s3://69-72-69-73-iris/emr_test_output/")
-#gsl.save_test_s3_file()
+#gsl.save_test_s3_file("s3://69-72-69-73-iris/emr_test_output/")
+gsl.save_test_s3_file()
 
